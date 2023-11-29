@@ -1,0 +1,5 @@
+.env
+.venv
+hosts.json
+__pycache__
+tmp.*

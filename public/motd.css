@@ -1,0 +1,99 @@
+@font-face {
+  font-family: minecraftnew;
+  /* (html2 image needs abs paths so we cheat with /tmp/) */
+  /* i didnt want to .format another file lol */
+  src: url("/tmp/minecraft.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: minecraftb;
+  src: url("/tmp/minecraft_bold.otf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: minecrafti;
+  src: url("/tmp/minecraft_italic.otf");
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: minecraftbi;
+  src: url("/tmp/minecraft_bolditalic.otf");
+  font-weight: bold;
+  font-style: italic;
+}
+
+strong,
+b {
+  font-family: minecraftb;
+}
+
+em,
+i {
+  font-family: minecrafti;
+}
+
+strong em,
+strong i,
+b em,
+b i {
+  font-family: minecraftbi;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: minecraftnew;
+  color: #7c7c7b;
+  background-image: url("https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/c1/Dirt_background_JE2.png/revision/latest?cb=20210507124914");
+  background-repeat: repeat;
+}
+
+#wrapper {
+  width: 502px;
+  height: 64px;
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  padding: 5px;
+
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#text {
+  width: 100px;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-grow: 1;
+}
+
+#title {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+#players {
+  float: right;
+  color: gray;
+}
+
+p {
+  text-shadow: 0 0 1px rgb(63, 63, 63);
+  margin: 0;
+}
+
+#icon {
+  width: 64px;
+  height: 64px;
+  background-color: black;
+  background-image:url("/tmp/default.png")!important;
+  background-size: contain;
+}

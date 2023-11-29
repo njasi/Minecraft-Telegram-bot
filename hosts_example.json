@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Hypixel",
+    "hostname": "mc.hypixel.net",
+    "port": 25565,
+    "local": false,
+    "whitelist_path": "",
+    "systemctl_name": "",
+    "tmux_name": ""
+  },
+  {
+    "name": "My Minecraft Server",
+    "hostname": "my.minecraft.server.com",
+    "port": 25565,
+    "local": true,
+    "whitelist_path": "/srv/minecraft/whitelist.json",
+    "systemctl_name": "minecraft",
+    "tmux_name": "minecraft"
+  }
+]
