@@ -14,10 +14,12 @@ async def command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.effective_message.reply_html(
             "The active server is not a local server"
         )
+        return
     except MissingSystemctlExt:
         await update.effective_message.reply_html(
             "The server is missing systemctl_ext in the hosts.json file"
         )
+        return
 
     # TODO get response from server stdout?
 

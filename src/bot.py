@@ -5,7 +5,13 @@ import traceback
 import os
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters
+)
 
 from handlers.start import start
 from handlers.help import help
@@ -13,6 +19,7 @@ from handlers.whitelist import whitelistadd, whitelistrm
 from handlers.ping import ping
 from handlers.status import status
 from handlers.online import online
+from handlers.command import command
 
 
 # Enable logging
@@ -68,6 +75,7 @@ def main() -> None:
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler(["status", "up"], status))
     application.add_handler(CommandHandler(["online", "tab"], online))
+    application.add_handler(MessageHandler(filters.COMMAND, command))
 
     # the error handler
     application.add_error_handler(error_handler)
