@@ -4,7 +4,7 @@ from hosts import hosts_get_active, NotLocalError, MissingSystemctlExt
 SERVER_PATH = "/srv/minecraft/{}/systemd.stdin"
 
 
-def sendCommand(command):
+def send_command(command):
     if command.indexOf("/") == 0:
         # chop out any slashes that are directly from the bot
         command = command[1:]
@@ -12,9 +12,9 @@ def sendCommand(command):
     active = hosts_get_active()
 
     if active["local"]:
-        raise NotLocalError
+        raise NotLocalError()
     if "systemctl_ext" not in active:
-        raise MissingSystemctlExt
+        raise MissingSystemctlExt()
 
     # TODO test this, change to echo if needed
     with open(SERVER_PATH.format(active["systemctl_ext"])) as file:

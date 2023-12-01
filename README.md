@@ -115,28 +115,44 @@ Minecraft server files should be moved to the `/srv/` directory. make the direct
 
 #### systemd
 
-We now want to make a service file, to launch our tmux session and start the minecraft server. Create the below files:
+We now want to make the following service files to launch our minecraft servers:
 
 - `/etc/systemd/minecraft@.service`:
 
-  A service file to let systemd know what to do.
+  A service file to let systemd know what to do, actually runs the server.
 
   `User` and `Group` should be set to your minecraft admin account.
 
   ```
   [Unit]
-  Description=Launch a Minecraft server in a tmux session
+  Description=Minecraft Server - %i
   After=local-fs.target network.target
+  ConditionPathExists=/srv/minecraft/%i
 
   [Service]
-  WorkingDirectory=/home/mineadmin/minecraft/server
+  WorkingDirectory=/srv/minecraft/%i
+
+  Sockets=minecraft@%i.socket
+  StandardInput=socket
+  StandardOutput=journal
+  StandardError=journal
+
   User=mineadmin
   Group=mineadmin
-  Type=oneshot
-  ExecStart=/script/launch.sh
-  RemainAfterExit=true
-  ExecStop=/bin/bash -c "tmux send-keys -t minecraft stop Enter && export PID=`cat server.pid` && while ps -p $PID > /dev/null; do sleep 1; done && tmux kill-session -t minecraft"
-  StandardOutput=journal
+
+  Environment="MIN_MEM=1024M"
+  Environment="MAX_MEM=4G"
+  Environment="JAR_PATH=server.jar"
+  Environment="JAVA_PARAMETERS="
+
+  EnviromentFile=/srv/minecraft/%i/systemd.conf
+
+  ExecStart=/bin/sh -c "/usr/bin/java -server -Xms${MIN_MEM} -Xmx${MAX_MEM} ${JAVA_PARAMETERS} -jar >
+  ExecStop=/bin/sh -c "/bin/echo stop > /srv/minecraft/%i/systemd.stdin"
+  Restart=on-failure
+  RestartSec=60s
+
+  KillSignal=SIGCONT
 
   [Install]
   WantedBy=multi-user.target
