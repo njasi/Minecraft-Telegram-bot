@@ -17,5 +17,5 @@ def send_command(command):
         raise MissingSystemctlExt()
 
     # TODO test this, change to echo if needed
-    with open(SERVER_PATH.format(active["systemctl_ext"])) as file:
+    with open(SERVER_PATH.format(active["systemctl_ext"]), "w") as file:
         file.write(command)
