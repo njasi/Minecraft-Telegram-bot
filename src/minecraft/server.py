@@ -171,7 +171,7 @@ def server_status(
         players = ""
         motd_html = "<p><span style='color:red;'>Can't connect to server</span></p>"
         if alpha and connect_alpha(addr):
-            motd_html = "<p>Connected to alpha server <i>port</i></p>"
+            motd_html = "<p>Connected to alpha server port<br><span style='color:orange;'><small>(port is open, but might not be a real server)</small></span></p>"
 
     if favicon is None:
         favicon = ""
