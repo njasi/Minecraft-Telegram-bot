@@ -1,0 +1,14 @@
+[Unit]
+Description=Minecraft server console socket
+BindsTo=minecraft@%i.service
+
+[Socket]
+ListenFIFO=/srv/minecraft/%i/systemd.stdin
+Service=minecraft@%i.service
+SocketUser=mineadmin
+SocketGroup=mineadmin
+RemoveOnStop=true
+SocketMode=0600
+
+[Install]
+WantedBy = sockets.target

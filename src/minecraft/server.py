@@ -2,14 +2,20 @@
 import os
 import shutil
 import time
+import socket
 from PIL import Image
 from html2image import Html2Image
 from mcstatus import JavaServer
-from minecraft.hosts import host_get_pretty_name, hosts_to_addrs
+from minecraft.hosts import (
+    hosts_to_addrs,
+    host_to_addr,
+    hosts_get_active,
+    host_get_details,
+    HostNotRegistered,
+)
+from minecraft.skins import render_face
+from minecraft.mojang import get_uuid
 
-HOSTNAME = os.environ.get("SERVER_HOST")
-PORT = os.environ.get("SERVER_PORT")
-MAIN_SERVER = f"{HOSTNAME}:{PORT}"
 DEFAULT_PORT = 25565
 
 
@@ -47,14 +53,12 @@ def parse_addr(addr):
 
 def get_server(addr):
     # TODO test if bedrock?
-    print("ADDR:", parse_addr(addr))
     server = JavaServer.lookup(parse_addr(addr))
     return server
 
 
-def parse_addr(addr):
+def parse_host(addr):
     """Parse into just host"""
-    # TODO add mapping to known hosts
     parts = addr.split(":")
     if len(parts) > 2:
         return parts[0]
@@ -65,8 +69,33 @@ def parse_addr(addr):
     return parts[0]
 
 
-def server_ping(addr=MAIN_SERVER):
+def connect_alpha(addr):
+    """
+    since alpha doesnt have the same protocol, we will just
+    try to connect to the port, and assume if the port is open that
+    the server is running
+    """
+    print("connecting to alpha server addr:", addr)
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(1)
+    try:
+        host, port = addr.split(":")
+        s.connect((host, int(port)))
+    except:
+        return False
+    return True
+
+
+def server_ping(addr=None):
+    host = None
+    if addr is None:
+        host = hosts_get_active()
+        if "alpha" in host and host["alpha"]:
+            return "Cannot ping apha server"
+        addr = host_to_addr(host)
+
     server = get_server(addr)
+
     try:
         latency = server.ping()
     except TimeoutError:
@@ -93,8 +122,9 @@ def unload_assets():
         os.remove(f"/tmp/{asset}")
 
 
-def servers_status(output_path="/tmp/", addrs=[MAIN_SERVER], options={}):
-    print(options)
+def servers_status(
+    output_path="/tmp/", addrs=[host_to_addr(hosts_get_active())], options={}
+):
     if "all" in options and options["all"]:
         addrs = hosts_to_addrs()
 
@@ -107,8 +137,24 @@ def servers_status(output_path="/tmp/", addrs=[MAIN_SERVER], options={}):
     return path
 
 
-def server_status(output_path="/tmp/", addr=MAIN_SERVER, options={}):
+def server_status(
+    output_path="/tmp/", addr=host_to_addr(hosts_get_active()), options={}
+):
     motd_html, favicon, players = [None] * 3
+    addr = parse_addr(addr)
+    name = parse_host(addr)
+
+    alpha = False
+    # lookup name and check if server is alpha
+    try:
+        host = host_get_details(addr)
+        print(host, addr)
+        if ("host" not in options or not options["host"]) and "name" in host:
+            name = host["name"]
+        if "alpha" in host and host["alpha"]:
+            alpha = True
+    except HostNotRegistered:
+        pass
 
     # check actual server status
     try:
@@ -124,13 +170,8 @@ def server_status(output_path="/tmp/", addr=MAIN_SERVER, options={}):
     except:
         players = ""
         motd_html = "<p><span style='color:red;'>Can't connect to server</span></p>"
-
-    # lookup name in json
-    name = addr
-    if "host" not in options or not options["host"]:
-        name = host_get_pretty_name(addr)
-        print("NAME", name)
-    name = parse_addr(name)
+        if alpha and connect_alpha(addr):
+            motd_html = "<p>Connected to alpha server <i>port</i></p>"
 
     if favicon is None:
         favicon = ""
@@ -159,5 +200,22 @@ def server_status(output_path="/tmp/", addr=MAIN_SERVER, options={}):
     return output_path + file
 
 
-def online():
-    pass
+def generate_player_tab(username, uuid):
+    image_url = render_face(uuid)
+    return f'<div class="player"> <img src="{image_url}" /><div>{username}</div></div>'
+
+
+def generate_cols(players):
+    # TODO balance out the cols?
+    items = []
+    for player in players:
+        uuid = get_uuid(player)
+        items += [generate_player_tab("njasi69", uuid)]
+    return "".join(items)
+
+
+def server_online(addr=host_to_addr(hosts_get_active())):
+    srv = get_server(addr)
+    status = srv.status()
+
+    # generate_cols(status.players)

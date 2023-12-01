@@ -1,9 +1,18 @@
 import json
-import os
 from minecraft.mojang import convert_uuid
+from minecraft.hosts import hosts_get_active
 
 
-WHITELIST_PATH = os.environ.get("WHITELIST_PATH")
+class WhitelistError(Exception):
+    def __init__(self, msg="No whitelist path for the active server", *args, **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
+
+def get_active_whitelist():
+    active = hosts_get_active()
+    if active is not None and "whitelist_path" in active:
+        return active["whitelist_path"]
+    raise WhitelistError()
 
 
 def whitelistf_add(username, uuid):
@@ -11,9 +20,11 @@ def whitelistf_add(username, uuid):
     add the specified user to the whitelist
     are not already in the file.
     """
+    whitelist_path = get_active_whitelist()
+
     uuid = convert_uuid(uuid)
     data = None
-    with open(WHITELIST_PATH, "r") as file:
+    with open(whitelist_path, "r") as file:
         data = json.load(file)
 
     if whitelistf_exists(username, uuid, data):
@@ -21,7 +32,7 @@ def whitelistf_add(username, uuid):
 
     data += [{"name": username, "uuid": uuid}]
 
-    with open(WHITELIST_PATH, "w") as file:
+    with open(whitelist_path, "w") as file:
         json.dump(data, file, indent=4)
 
 
@@ -30,9 +41,10 @@ def whitelistf_rm(username, uuid):
     remove the specified user from the whitelist
     if they are in the file.
     """
+    whitelist_path = get_active_whitelist()
     uuid = convert_uuid(uuid)
     data = None
-    with open(WHITELIST_PATH, "r") as file:
+    with open(whitelist_path, "r") as file:
         data = json.load(file)
 
     if not whitelistf_exists(username, uuid, data):
@@ -42,7 +54,7 @@ def whitelistf_rm(username, uuid):
         user for user in data if not (user["name"] == username and user["uuid"] == uuid)
     ]
 
-    with open(WHITELIST_PATH, "w") as file:
+    with open(whitelist_path, "w") as file:
         json.dump(data_new, file, indent=4)
 
 
@@ -51,9 +63,10 @@ def whitelistf_exists(username, uuid, data=None):
     Check if the specified user is in the whitelist
         - if data is specified it is not loaded here
     """
+    whitelist_path = get_active_whitelist()
     uuid = convert_uuid(uuid)
     if data is None:
-        with open(WHITELIST_PATH, "r") as file:
+        with open(whitelist_path, "r") as file:
             data = json.load(file)
 
     for user in data:

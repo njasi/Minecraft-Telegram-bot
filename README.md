@@ -10,7 +10,7 @@ This is a basic server telegram bot that can interface with minecraft servers in
 - TODO control local blacklist.json files?
 - TODO control server.properties settings?
 
-This bot is not a plugin or a mod, it is a standalone python program. If setup local to your minecraft servers it'll have access to their consoles through tmux (see setup instructions and details below). This also means that it could be used for basically any version of minecraft. I plan to use it to manage 3 servers of differing versions at once.
+This bot is not a plugin or a mod, it is a standalone python program. If setup local to your minecraft servers it'll have access to their consoles through a FIFO file (see setup instructions and details below). This also means that it could be used for basically any version of minecraft. I plan to use it to manage 3 servers of differing versions at once.
 
 ## Interface overview
 
@@ -41,22 +41,29 @@ An array of your saved hosts.
 ```json
 [
   {
-    "name": "My Minecraft Server",
+    "name": "My Minecraft Vanilla Server",
     "hostname": "my.minecraft.server.com",
     "port": 25565,
     "local": true,
-    "whitelist_path": "/srv/minecraft/whitelist.json",
+    "whitelist_path": "/srv/minecraft/vanilla/whitelist.json",
     "systemctl_name": "minecraft",
-    "tmux_name": "minecraft"
+    "systemctl_ext": "vanilla",
+    "default": true
+  },
+  {
+    "name": "My Minecraft Server",
+    "hostname": "alpha.minecraft.server.com",
+    "port": 25565,
+    "local": true,
+    "whitelist_path": "/srv/minecraft/alpha/whitelist.json",
+    "systemctl_name": "minecraft",
+    "systemctl_ext": "alpha"
   },
   {
     "name": "Hypixel",
     "hostname": "mc.hypixel.net",
     "port": 25565,
-    "local": false,
-    "whitelist_path": "",
-    "systemctl_name": "",
-    "tmux_name": ""
+    "local": false
   }
 ]
 ```
@@ -68,8 +75,9 @@ Values:
 - `port`: The port the server is running on, will be displayed if is non default when prompted for the hostname.
 - `local`: True if this server is local
 - `whitelist_path`: Path to the whitelist.json file for this local server
-- `systemctl_name`: Service name of the server
-- `tmux_name`: Name of the tmux session your server runs in.
+- `systemctl_name`: Service name of the server (ie minecraft@.service => `systemctl_name=minecraft`)
+- `systemctl_ext`: Name of the specific minecraft server (ie minecraft@vanilla.service => `systemctl_ext=vanilla`). The service has been setup this way so you can easily run multiple minecraft servers.
+- `default`: If this is the default active server for the bot.
 
 ### .env
 
@@ -97,32 +105,23 @@ As mentioned earlier, for the bot to have control over the server it has be run 
 
 This isn't neccessary if you only want the whitelist functionality though, as that directly edits your whitelist.json for simplicity.
 
-In the below setup we let `servername` be the name of the server (one_word). Note that this is the value to use in the host config file for `systemctl_path` and `tmux_name`. If there are multiple servers on the local system you want to manage with the bot make sure the names are different...
+In the below setup we let `servername` be the name of the server (one_word). Note that this is the value to use in the host config file for `systemctl_ext`. If there are multiple servers on the local system you want to manage with the bot make sure the names are different...
 
-#### tmux
+These systemd files are largely taken from [here](https://github.com/jtait/minecraft_systemd/tree/master) if you want to read their setup instructions.
 
-We will run the minecraft server in a tmux session so we can interface with it at any time. If you don't have tmux you can install it with:
+#### Minecraft files
 
-```
-sudo apt get tmux
-```
-
-To access the server command prompt yourself use `tmux attach -t servername` after you setup and start the server as instructed below.
+Minecraft server files should be moved to the `/srv/` directory. make the directory `/srv/minecraft` and then put your server folder in there. So the path to server `servername` would be `/srv/minecraft/servername`. Also make sure the minecraft directory is owned by your minecraft admin account and group.
 
 #### systemd
 
 We now want to make a service file, to launch our tmux session and start the minecraft server. Create the below files:
 
-- `/etc/systemd/servername.service`:
+- `/etc/systemd/minecraft@.service`:
 
-  A service file to let systemd know what to do. ExecStop can be improved for sure, as I usually avoid long bash operations like this.
+  A service file to let systemd know what to do.
 
-  `User` and `Group` should be set to the minecraft admin account, and `WorkingDirectoy` should be a path to the server folder.
-
-  After properly setting up this file the server can be started with `systemctl start servername` and stopped with `systemct stop servername`. To start the server automatically whenever the computer is on run `systemctl enable servername`. This only needs to be done once
-  
-
-
+  `User` and `Group` should be set to your minecraft admin account.
 
   ```
   [Unit]
@@ -134,28 +133,36 @@ We now want to make a service file, to launch our tmux session and start the min
   User=mineadmin
   Group=mineadmin
   Type=oneshot
-  ExecStart=tmux new -s minecraft -d && tmux send-keys -t minecraft "./start.sh" Enter
+  ExecStart=/script/launch.sh
   RemainAfterExit=true
-  ExecStop=tmux send-keys -t minecraft stop Enter && export PID=`cat server.pid` && while ps -p $PID > /dev/null; do sleep 1; done && tmux kill-session -t minecraft
+  ExecStop=/bin/bash -c "tmux send-keys -t minecraft stop Enter && export PID=`cat server.pid` && while ps -p $PID > /dev/null; do sleep 1; done && tmux kill-session -t minecraft"
   StandardOutput=journal
 
   [Install]
   WantedBy=multi-user.target
   ```
 
-- `/home/mineadmin/minecraft/server/start.sh`:
-  helper script for starting the server and saving the pid
-
-  ```bash
-  java -Xms1024M -Xmx4G -jar server-x.x.x.jar nogui &
-  echo $$ > server.pid
-  ```
-
-  make sure to make `start.sh` executable with
+- `/etc/systemd/system/minecraft@.socket`:
+  socket systemd file that allows us to send commands to the minecraft server
 
   ```
-  chmod +x start.sh
+  [Unit]
+  Description=Minecraft server console socket
+  BindsTo=minecraft@%i.service
+
+  [Socket]
+  ListenFIFO=/srv/minecraft/%i/systemd.stdin
+  Service=minecraft@%i.service
+  SocketUser=mineadmin
+  SocketGroup=mineadmin
+  RemoveOnStop=true
+  SocketMode=0600
+
+  [Install]
+  WantedBy = sockets.target
   ```
+
+After properly setting up these files the server can be started with `systemctl start minecraft@servername` and stopped with `systemct stop minecraft@servername`. To start the server automatically whenever the computer is on run `systemctl enable minecraft@servername`. This only needs to be done once
 
 ### Other
 

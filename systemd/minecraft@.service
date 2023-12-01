@@ -1,0 +1,32 @@
+[Unit]
+Description=Minecraft Server - %i
+After=local-fs.target network.target
+ConditionPathExists=/srv/minecraft/%i
+
+[Service]
+WorkingDirectory=/srv/minecraft/%i
+
+Sockets=minecraft@%i.socket
+StandardInput=socket
+StandardOutput=journal
+StandardError=journal
+
+User=mineadmin
+Group=mineadmin
+
+Environment="MIN_MEM=1024M"
+Environment="MAX_MEM=4G"
+Environment="JAR_PATH=server.jar"
+Environment="JAVA_PARAMETERS="
+
+EnviromentFile=/srv/minecraft/%i/systemd.conf
+
+ExecStart=/bin/sh -c "/usr/bin/java -server -Xms${MIN_MEM} -Xmx${MAX_MEM} ${JAVA_PARAMETERS} -jar >
+ExecStop=/bin/sh -c "/bin/echo stop > /srv/minecraft/%i/systemd.stdin"
+Restart=on-failure
+RestartSec=60s
+
+KillSignal=SIGCONT
+
+[Install]
+WantedBy=multi-user.target

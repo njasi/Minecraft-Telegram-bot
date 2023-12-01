@@ -13,7 +13,7 @@
     "hostname": "my.minecraft.server.com",
     "port": 25565,
     "local": true,
-    "whitelist_path": "/srv/minecraft/whitelist.json",
+    "whitelist_path": "./tmp.json",
     "systemctl_name": "minecraft",
     "tmux_name": "minecraft"
   }

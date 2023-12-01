@@ -12,6 +12,7 @@ from handlers.help import help
 from handlers.whitelist import whitelistadd, whitelistrm
 from handlers.ping import ping
 from handlers.status import status
+from handlers.online import online
 
 
 # Enable logging
@@ -66,6 +67,7 @@ def main() -> None:
     application.add_handler(CommandHandler("whitelistrm", whitelistrm))
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler(["status", "up"], status))
+    application.add_handler(CommandHandler(["online", "tab"], online))
 
     # the error handler
     application.add_error_handler(error_handler)
