@@ -5,7 +5,7 @@ from minecraft.hosts import MissingSystemctlExt, NotLocalError
 from minecraft.commands import send_command
 
 
-async def command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def commands(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """send an arbitrary command to the stdin of the active server"""
 
     try:
