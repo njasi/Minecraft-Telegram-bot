@@ -9,8 +9,8 @@ def send_whitelist_reload():
 
 
 def send_tellraw(user, message, color="blue"):
-    command = '/tellraw @a [{"text":"<", "color":"white"},{"text":"{}", "color":"{}"},{"text":"> {}", "color":"white"}]'.format(
-        color, user, message
+    command = '/tellraw @a [\{"text":"<", "color":"white"\},\{"text":"{}", "color":"{}"\},\{"text":"> {}", "color":"white"\}]'.format(
+        user, color, message
     )
     send_command(command)
 
