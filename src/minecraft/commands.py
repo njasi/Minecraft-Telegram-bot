@@ -9,14 +9,17 @@ def send_whitelist_reload():
 
 
 def send_tellraw(user, message, color="blue"):
-    command = '/tellraw @a [\{"text":"<", "color":"white"\},\{"text":"{}", "color":"{}"\},\{"text":"> {}", "color":"white"\}]'.format(
+    command = 'tellraw @a [{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
         user, color, message
     )
     send_command(command)
 
 
 def send_command(command):
-    if command.index("/") == 0:
+    if len(command) <= 0:
+        return
+
+    if command[0] == "/":
         # chop out any slashes that are directly from the bot
         command = command[1:]
 

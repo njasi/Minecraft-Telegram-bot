@@ -80,8 +80,7 @@ def main() -> None:
     # commands that dont fit the above get sent to the server console with the slash removed
     application.add_handler(MessageHandler(filters.COMMAND, commands))
     # remaining messages get sent to minecraft
-    application.add_handler(MessageHandler(~filters.COMMAND, messages))
-
+    application.add_handler(MessageHandler(filters.TEXT and filters.CAPTION, messages))
 
     # the error handler
     application.add_error_handler(error_handler)
