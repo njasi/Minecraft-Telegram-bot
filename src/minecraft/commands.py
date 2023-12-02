@@ -31,5 +31,3 @@ def send_command(command):
     with open(SERVER_PATH.format(active["systemctl_ext"]), "w") as file:
         file.write(command + "\n")
         file.flush()
-
-        [{"text": "<{}> ", "color": "blue"}, {"text": "{}"}]
