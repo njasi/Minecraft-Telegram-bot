@@ -11,6 +11,7 @@ SERVICE_NAME = os.environ.get("TOKEN")
 def push_systemctl_command(command):
     # make sure you've given your user sudo perms for at least systemctl
     # id reccomend making it specifically just /bin/systemctl
+    # see the readme of the repo that the systemd files are derived from
     os.system(f"sudo systemctl {command} {SERVICE_NAME}")
 
 async def stopserver(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

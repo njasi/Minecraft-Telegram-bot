@@ -9,17 +9,17 @@ This is a simple bot used to check basic info about a minecraft server.
     Check server(s) status, renders motd like in the minecraft launcher.
     -a, --all: show all of the hosts in your hosts file.
     -h, --hostname: show hostnames instead of pretty names.
+/ping [hostname]:
+    Measure the response time of the server.
 /online [hostname]:
     Check what players are online (obsfucated by some servers)
-/ping [hostname]:
-Measure the response time of the server.
 
 <b>If you're a chat admin there are some additional commands:</b>
 
-/activate extname
-    Select the active server by it's extname
+/activate [extname]
+    Select the active server by it's extname, or send what the active host is
 /serverstop [extname]:
-    Stop the server
+    Stop the server, defaults to active server
 /serverstart [extname]:
     Start the server, defaults to active server
 /serverrestart [extname]:
@@ -30,6 +30,9 @@ Measure the response time of the server.
     Remove player from the whitelist of the active server
 /lsext:
     list server extnames
+
+Additionally, any command you send that is not one of the above (like /say) is sent to the server console. This way you can do more complicated things
+if you need.
 """
 
 

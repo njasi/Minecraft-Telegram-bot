@@ -75,7 +75,6 @@ def connect_alpha(addr):
     try to connect to the port, and assume if the port is open that
     the server is running
     """
-    print("connecting to alpha server addr:", addr)
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(1)
     try:
@@ -148,7 +147,6 @@ def server_status(
     # lookup name and check if server is alpha
     try:
         host = host_get_details(addr)
-        print(host, addr)
         if ("host" not in options or not options["host"]) and "name" in host:
             name = host["name"]
         if "alpha" in host and host["alpha"]:

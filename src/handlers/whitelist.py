@@ -10,7 +10,7 @@ from minecraft.whitelist import (
 )
 from minecraft.commands import send_whitelist_reload
 
-USAGE_STRING = """USAGE:\t/whitelist{} username"""
+USAGE_STRING = """USAGE:\t/whitelist{} username [extname]\n\n(optional host ext name not implemented yet cause im lazy)"""
 
 
 async def whitelistadd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

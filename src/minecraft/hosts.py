@@ -23,9 +23,22 @@ class HostNotRegistered(Exception):
         super().__init__(msg, *args, **kwargs)
 
 
+class HostNotFound(Exception):
+    def __init__(self, msg="The host was not found", *args, **kwargs):
+        super().__init__(msg, *args, **kwargs)
+
+
 HOSTS = None
 with open("./hosts.json") as file:
     HOSTS = json.load(file)
+
+
+# TODO refactor these cause they bother me
+#       host_x functions should take a host json obj
+#       and refer to one host
+#
+#       hosts_x functions should taake some other arg
+#       and ook through the HOSTS var
 
 
 def host_get_details(addr, ext=None):
@@ -51,17 +64,21 @@ def host_get_details(addr, ext=None):
     raise HostNotRegistered()
 
 
-def host_get_value(hkey, key):
-    host = host_get_details(hkey)
+def host_get_value(hkey, key, host=None):
+    if host is None:
+        host = host_get_details(hkey)
+
     if host is not None and key in host:
         return host[key]
+
     return None
 
 
-def host_get_pretty_name(hkey):
-    name = host_get_value(hkey, "name")
+def host_get_name(host):
+    name = host_get_value("", "name", host=host)
+    hostname = host_get_value("", "hostname", host=host)
     if name is None:
-        return hkey
+        name = hostname
     return name
 
 
@@ -81,17 +98,38 @@ def hosts_get_default():
     for host in HOSTS:
         if "default" in host and host["default"]:
             return host
-    return None
+
+    # default to first one if theres no bool
+    return host[0]
 
 
-def hosts_set_active(hostname=None, ext=None):
+def hosts_set_active(hostname):
+    """
+    Somewhat gross wrapper for if i need to do it by name
+    """
     global active_server
-    active_server = host_get_details(hostname, ext)
-    print(active_server, hostname)
+    host_get_details(hostname)
+    host_set_active(host_get_details(hostname))
+
+
+def host_set_active(host):
+    global active_server
+    active_server = host
 
 
 def hosts_get_active():
     return active_server
+
+
+def host_get_by_ext(ext_name):
+    for host in HOSTS:
+        if "systemctl_ext" in host and host["systemctl_ext"] == ext_name:
+            return host
+    raise HostNotFound()
+
+
+def hosts_get_all():
+    return HOSTS
 
 
 # load in the default server host

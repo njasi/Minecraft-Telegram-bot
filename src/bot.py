@@ -19,6 +19,8 @@ from handlers.whitelist import whitelistadd, whitelistrm
 from handlers.ping import ping
 from handlers.status import status
 from handlers.online import online
+from handlers.lsext import lsext
+from handlers.activate import activate
 from handlers.commands import commands
 from handlers.messages import messages
 
@@ -76,6 +78,8 @@ def main() -> None:
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler(["status", "up"], status))
     application.add_handler(CommandHandler(["online", "tab"], online))
+    application.add_handler(CommandHandler(["a", "activate", "active"], activate))
+    application.add_handler(CommandHandler(["lsext"], lsext))
 
     # commands that dont fit the above get sent to the server console with the slash removed
     application.add_handler(MessageHandler(filters.COMMAND, commands))

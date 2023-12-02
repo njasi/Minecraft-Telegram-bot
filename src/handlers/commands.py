@@ -20,7 +20,18 @@ async def commands(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "The server is missing systemctl_ext in the hosts.json file"
         )
         return
+    except FileNotFoundError:
+        await update.effective_message.reply_html(
+            "Could not find the systemd.stdin file, check your configuration."
+        )
+        return
+    except:
+        await update.effective_message.reply_html(
+            "There was an unknown error while executing your command."
+        )
+        return
 
     # TODO get response from server stdout?
+    # make it check journalctl? or can systemd output two places
 
     await update.effective_message.reply_html("ran the command")
