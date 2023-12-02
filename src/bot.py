@@ -10,7 +10,7 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
     MessageHandler,
-    filters
+    filters,
 )
 
 from handlers.start import start
@@ -19,7 +19,8 @@ from handlers.whitelist import whitelistadd, whitelistrm
 from handlers.ping import ping
 from handlers.status import status
 from handlers.online import online
-from handlers.command import command
+from handlers.commands import commands
+from handlers.messages import messages
 
 
 # Enable logging
@@ -75,7 +76,12 @@ def main() -> None:
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler(["status", "up"], status))
     application.add_handler(CommandHandler(["online", "tab"], online))
-    application.add_handler(MessageHandler(filters.COMMAND, command))
+
+    # commands that dont fit the above get sent to the server console with the slash removed
+    application.add_handler(MessageHandler(filters.COMMAND, commands))
+    # remaining messages get sent to minecraft
+    application.add_handler(MessageHandler(~filters.COMMAND, messages))
+
 
     # the error handler
     application.add_error_handler(error_handler)

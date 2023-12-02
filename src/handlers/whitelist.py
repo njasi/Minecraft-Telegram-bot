@@ -8,10 +8,11 @@ from minecraft.whitelist import (
     whitelistf_exists,
     WhitelistError,
 )
+from minecraft.commands import send_whitelist_reload
 
 USAGE_STRING = """USAGE:\t/whitelist{} username"""
 
-# TODO add command whiteist reload to end of both functions
+
 async def whitelistadd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Displays start information, see the string above."""
     if not len(context.args) == 1:
@@ -44,6 +45,13 @@ async def whitelistadd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             message_id=message.message_id,
             caption=f"Successfully whitelisted {name}. This should take effect in a few minutes.",
         )
+
+        # TODO properly handle this
+        try:
+            send_whitelist_reload()
+        except:
+            pass
+
     except WhitelistError:
         await update.effective_message.reply_html(
             text=f"This server does not have a whitelist file configured",
@@ -82,6 +90,13 @@ async def whitelistrm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             message_id=message.message_id,
             text=f"Successfully removed {name} from the whitelist. This should take effect in a few minutes.",
         )
+
+        # TODO properly handle this
+        try:
+            send_whitelist_reload()
+        except:
+            pass
+
     except WhitelistError:
         await update.effective_message.reply_html(
             text=f"This server does not have a whitelist file configured",
