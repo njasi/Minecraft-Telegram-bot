@@ -132,5 +132,9 @@ def hosts_get_all():
     return HOSTS
 
 
+def hosts_get_local():
+    return [host for host in hosts_get_all() if "local" in host and host["local"]]
+
+
 # load in the default server host
 active_server = hosts_get_default()

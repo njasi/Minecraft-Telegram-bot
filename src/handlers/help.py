@@ -28,8 +28,8 @@ This is a simple bot used to check basic info about a minecraft server.
     Add player to the whitelist of the active server
 /whitelistrm username [extname]
     Remove player from the whitelist of the active server
-/lsext:
-    list server extnames
+/local:
+    list local server information: extnames, hostnames, whitelist status 
 
 Additionally, any command you send that is not one of the above (like /say) is sent to the server console. This way you can do more complicated things
 if you need.

@@ -19,7 +19,7 @@ from handlers.whitelist import whitelistadd, whitelistrm
 from handlers.ping import ping
 from handlers.status import status
 from handlers.online import online
-from handlers.lsext import lsext
+from handlers.local import local
 from handlers.activate import activate
 from handlers.commands import commands
 from handlers.messages import messages
@@ -47,7 +47,6 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     tb_string = "".join(tb_list)
 
     # Build the message with some markup and additional information about what happened.
-    # You might need to add some logic to deal with messages longer than the 4096 character limit.
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
     message = (
         "An exception was raised while handling an update\n"
@@ -79,7 +78,7 @@ def main() -> None:
     application.add_handler(CommandHandler(["status", "up"], status))
     application.add_handler(CommandHandler(["online", "tab"], online))
     application.add_handler(CommandHandler(["a", "activate", "active"], activate))
-    application.add_handler(CommandHandler(["lsext"], lsext))
+    application.add_handler(CommandHandler("local", local))
 
     # commands that dont fit the above get sent to the server console with the slash removed
     application.add_handler(MessageHandler(filters.COMMAND, commands))
