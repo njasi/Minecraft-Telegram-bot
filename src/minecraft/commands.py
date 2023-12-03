@@ -22,7 +22,7 @@ def ensure_string(message):
 
 def tellraw_to_tell_string(message):
     try:
-        data = json.load(message)
+        data = json.loads(message)
 
         if isinstance(data, list):
             result = ""
@@ -31,18 +31,19 @@ def tellraw_to_tell_string(message):
                     result += item["text"]
                 except:
                     pass
+            return result
         else:
             return data["text"]
     except:
+
         return message
 
 
-def send_tell(message, target="@", host=None, raw=True):
-    raw_str = "raw" if raw else ""
-    send_command(f"tell{raw_str} {target} {message}", host=host)
+def send_tell(message, target="@a", host=None, command="tell"):
+    send_command(f"{command} {target} {message}", host=host)
 
 
-def send_tell_general(message, target="@", color="blue", host=None):
+def send_tell_general(message, target="@a", host=None):
     """
     expect a tellraw type string message with json
 
@@ -51,21 +52,38 @@ def send_tell_general(message, target="@", color="blue", host=None):
     # TODO make this check the server version for if it has tellraw
     # and then just use tell instead, or maybe say
     has_tellraw = True
-    if "alpha" in host and host["alpha"]:
-        has_tellraw = False
+    use_say = False
 
-    if has_tellraw:
-        send_tell(message, target=target, color=color, host=host)
+    if "alpha" in host and host["alpha"]:
+        use_say = True
+
+    # if version < "1.4.2":
+    #     1.4.2 is the first to have @a
+    #     use_say = True
+
+    # if version >= "1.7.2":
+    #     1.7.2 is the first version to have tellraw
+    #
+
+
+    if use_say:
+        # - exclude target in say
+        # - for versions that dont have @a yet
+        # - generally tell is better as it excludes the "[server]" part
+        message = tellraw_to_tell_string(message)
+        send_tell(message, target="", host=host, command="say")
+    elif has_tellraw:
+        send_tell(message, target=target, host=host, command="tellraw")
     else:
         message = tellraw_to_tell_string(message)
-        send_tell(message, target=target, host=host, raw=False)
+        send_tell(message, target=target, host=host)
 
 
 def send_user_message(user, message, color="blue", host=None):
     message = '[{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
         user, color, message
     )
-    send_tell_general(message, color=color, host=host)
+    send_tell_general(message, host=host)
 
 
 def send_command(command, host=None):
