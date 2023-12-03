@@ -1,30 +1,87 @@
 from minecraft.hosts import hosts_get_active, NotLocalError, MissingSystemctlExt
+import json
 
 
 SERVER_PATH = "/srv/minecraft/{}/systemd.stdin"
 
 
-def send_whitelist_reload():
-    send_command("whitelist reload")
+def send_whitelist_reload(host=None):
+    send_command("whitelist reload", host=host)
 
 
-def send_tellraw(user, message, color="blue"):
-    command = 'tellraw @a [{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
+def send_verificaion_code(user, code, host=None):
+    send_command(f"tell {user} Your verification code is {code}", host=host)
+
+
+def ensure_string(message):
+    try:
+        return json.dumps(message)
+    except:
+        return message
+
+
+def tellraw_to_tell_string(message):
+    try:
+        data = json.load(message)
+
+        if isinstance(data, list):
+            result = ""
+            for item in data:
+                try:
+                    result += item["text"]
+                except:
+                    pass
+        else:
+            return data["text"]
+    except:
+        return message
+
+
+def send_tell(message, target="@", host=None, raw=True):
+    raw_str = "raw" if raw else ""
+    send_command(f"tell{raw_str} {target} {message}", host=host)
+
+
+def send_tell_general(message, target="@", color="blue", host=None):
+    """
+    expect a tellraw type string message with json
+
+    message: (string | any) either a plain string, json string, or json object
+    """
+    # TODO make this check the server version for if it has tellraw
+    # and then just use tell instead, or maybe say
+    has_tellraw = True
+    if "alpha" in host and host["alpha"]:
+        has_tellraw = False
+
+    if has_tellraw:
+        send_tell(message, target=target, color=color, host=host)
+    else:
+        message = tellraw_to_tell_string(message)
+        send_tell(message, target=target, host=host, raw=False)
+
+
+def send_user_message(user, message, color="blue", host=None):
+    message = '[{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
         user, color, message
     )
-    send_command(command)
+    send_tell_general(message, color=color, host=host)
 
 
-def send_command(command):
+def send_command(command, host=None):
     if len(command) <= 0:
         return
+
+    # load in active host if we dont pass one
+    active = host
+    if host is None:
+        active = hosts_get_active()
 
     if command[0] == "/":
         # chop out any slashes that are directly from the bot
         command = command[1:]
 
-    active = hosts_get_active()
-
+    # if its not local or setup raise error
     if not active["local"]:
         raise NotLocalError()
     if "systemctl_ext" not in active:
