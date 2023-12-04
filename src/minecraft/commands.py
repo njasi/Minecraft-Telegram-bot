@@ -88,7 +88,7 @@ def send_tell_general(message, target="@a", host=None):
 
 def send_user_message(user, message, color="blue", host=None):
     message = '[{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
-        user, color, message
+        user, color, message.replace("\n","")
     )
     send_tell_general(message, host=host)
 
