@@ -6,7 +6,7 @@ import socket
 from PIL import Image
 from html2image import Html2Image
 from mcstatus import JavaServer
-from minecraft.hosts import (
+from data.hosts import (
     hosts_to_addrs,
     host_to_addr,
     hosts_get_active,

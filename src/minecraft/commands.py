@@ -1,4 +1,4 @@
-from minecraft.hosts import hosts_get_active, NotLocalError, MissingSystemctlExt
+from data.hosts import hosts_get_active, NotLocalError, MissingSystemctlExt
 import json
 
 

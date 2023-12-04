@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from minecraft.hosts import MissingSystemctlExt, NotLocalError
+from data.hosts import MissingSystemctlExt, NotLocalError
 from minecraft.commands import send_command
 
 

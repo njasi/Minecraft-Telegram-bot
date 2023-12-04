@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from minecraft.skins import render_url
 from minecraft.mojang import get_uuid
-from minecraft.whitelist import (
+from data.whitelist import (
     whitelistf_add,
     whitelistf_rm,
     whitelistf_exists,

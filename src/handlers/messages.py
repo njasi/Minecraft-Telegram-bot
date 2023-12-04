@@ -1,9 +1,9 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
-from minecraft.hosts import MissingSystemctlExt, NotLocalError
+from data.hosts import MissingSystemctlExt, NotLocalError
 from minecraft.commands import send_user_message
-from minecraft.hosts import hosts_get_active
+from data.hosts import hosts_get_active
 
 
 async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

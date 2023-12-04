@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from minecraft.hosts import (
+from data.hosts import (
     host_set_active,
     host_get_by_ext,
     hosts_get_active,

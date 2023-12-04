@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from minecraft.hosts import hosts_get_local, host_get_value, host_get_name, host_to_addr
+from data.hosts import hosts_get_local, host_get_value, host_get_name, host_to_addr
 
 
 def make_ext_string(host):

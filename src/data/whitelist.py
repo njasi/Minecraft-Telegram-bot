@@ -1,6 +1,6 @@
 import json
 from minecraft.mojang import convert_uuid
-from minecraft.hosts import hosts_get_active
+from data.hosts import hosts_get_active
 
 
 class WhitelistError(Exception):
