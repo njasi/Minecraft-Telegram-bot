@@ -1,7 +1,7 @@
 import os
 from telegram import Update
 from telegram.ext import ContextTypes
-from minecraft.server import servers_status
+from render.status import servers_status
 
 # telegram is annoying and consolidates -- into "—" on some clients
 DOUBLE_DASH = "—"
