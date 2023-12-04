@@ -158,6 +158,21 @@ def users_send_verification(telegram_id, mc_username, code_length=6):
     )
 
     users_set(telegram_id, "verification_code", code)
+    users_set(telegram_id, "minecraft_username", mc_username)
 
     result = send_code(mc_username, code)
     # TODO, actually handle result, but i would need command results for it
+
+
+def users_check_code(telegram_id, code):
+    """
+    Check if the code is correct and verify if it is
+
+    return true if its a match, false if not
+    """
+    user = users_find(telegram_id)
+    if user["verification_code"] is not None and code == user["verification_code"]:
+        user["verification_code"] = True
+        user_update(user)
+        return True
+    return False

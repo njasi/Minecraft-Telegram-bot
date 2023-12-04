@@ -3,7 +3,13 @@ from telegram.ext import ContextTypes
 
 from data.hosts import MissingSystemctlExt, NotLocalError
 from minecraft.commands import broadcast_user_message
-from data.hosts import hosts_get_active
+from data.users import (
+    users_telegram_to_minecraft,
+    user_add,
+    users_check_code,
+    UserNotVerified,
+    UserNotFound,
+)
 
 
 async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -11,12 +17,19 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     try:
         # TODO map telegram user to minecraft user
-        user = update.message.from_user.name
+        mcuser = users_telegram_to_minecraft(update.message.from_user.id)
 
         # sends user message to all integrated hosts
-        broadcast_user_message(user, update.message.text)
+        broadcast_user_message(mcuser, update.message.text)
+    except UserNotVerified:
+        # would be more prudent to verify in a command or reply but we dont need to
+        if users_check_code(update.message.from_user.id, update.message.text):
+            await update.effective_message.reply_html(
+                "Your minecraft username has been verified.\n\nNow when you send a normal message to me or to the chat it will be sent to all the active dabney minecraft servers in chat as your username."
+            )
+    except UserNotFound:
+        user_add(update.message.from_user.id)
 
-    # TODO refactor this now that it sends to all
     except NotLocalError:
         await update.effective_message.reply_html(
             "The active server is not a local server"

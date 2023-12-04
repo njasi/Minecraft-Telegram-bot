@@ -21,10 +21,11 @@ async def link(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         users_find(uid)
     except UserNotFound:
         user_add(uid)
-    
 
-    # send code and add it to ur verifiction
+    # send code and add it to ur verification
     name = context.args[0]
     users_send_verification(uid, name)
 
-    await update.effective_message.reply_html(f"A verification code has been sent to {name}")
+    await update.effective_message.reply_html(
+        f'A verification code has been sent to the minecraft user "{name}".\n\nSend the code to me and then we can verify your account name.'
+    )
