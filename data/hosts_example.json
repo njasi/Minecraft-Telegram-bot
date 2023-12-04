@@ -5,8 +5,7 @@
     "port": 25565,
     "local": false,
     "whitelist_path": "",
-    "systemctl_name": "",
-    "tmux_name": ""
+    "systemctl_name": ""
   },
   {
     "name": "My Minecraft Server",
@@ -14,7 +13,6 @@
     "port": 25565,
     "local": true,
     "whitelist_path": "./tmp.json",
-    "systemctl_name": "minecraft",
-    "tmux_name": "minecraft"
+    "systemctl_name": "minecraft"
   }
 ]

@@ -1,5 +1,6 @@
 .env
 .venv
 hosts.json
+users.json
 __pycache__
 tmp.*

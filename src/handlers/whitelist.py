@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-from minecraft.skins import render_url
+from minecraft.skins import render_skin
 from minecraft.mojang import get_uuid
 from data.whitelist import (
     whitelistf_add,
@@ -34,8 +34,9 @@ async def whitelistadd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             )
             return
 
+
         message = await update.effective_message.reply_photo(
-            caption=f"Whitelisting {name}", photo=render_url(uuid)
+            caption=f"Whitelisting {name}", photo=render_skin(uuid)
         )
 
         whitelistf_add(name, uuid)

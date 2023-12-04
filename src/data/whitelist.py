@@ -1,6 +1,6 @@
 import json
 from minecraft.mojang import convert_uuid
-from data.hosts import hosts_get_active
+from data.hosts import hosts_get_active, hosts_get_all
 
 
 class WhitelistError(Exception):
@@ -13,6 +13,17 @@ def get_active_whitelist():
     if active is not None and "whitelist_path" in active:
         return active["whitelist_path"]
     raise WhitelistError()
+
+
+def whitelistable():
+    """
+    get list of all hosts that have whitelist_path which is a strring
+    """
+    [
+        host
+        for host in hosts_get_all()
+        if "whitelist_path" in host and isinstance(host["whitelist_path"], str)
+    ]
 
 
 def whitelistf_add(username, uuid):
@@ -74,3 +85,10 @@ def whitelistf_exists(username, uuid, data=None):
             return True
 
     return False
+
+
+def whitelistf_all(username, uuid, func=whitelistf_add):
+    hw = whitelistable()
+    stats = []
+    for h in hw:
+        func(username, uuid)

@@ -1,5 +1,12 @@
-from data.hosts import hosts_get_active, NotLocalError, MissingSystemctlExt
+from data.hosts import (
+    hosts_get_active,
+    NotLocalError,
+    MissingSystemctlExt,
+    hosts_get_integrated,
+    host_to_addr,
+)
 import json
+import os
 
 
 SERVER_PATH = "/srv/minecraft/{}/systemd.stdin"
@@ -20,23 +27,25 @@ def ensure_string(message):
         return message
 
 
+ERROR_TELLRAW_JSON = "Invalid tellraw json string: {}"
+
+
 def tellraw_to_tell_string(message):
+    """
+    "Reasonable" conversion from tellraw message to just text
+    for /tell or /say
+    """
     try:
         data = json.loads(message)
-
         if isinstance(data, list):
-            result = ""
-            for item in data:
-                try:
-                    result += item["text"]
-                except:
-                    pass
-            return result
-        else:
-            return data["text"]
-    except:
-
-        return message
+            return "".join([item["text"] for item in data])
+        elif isinstance(data, str):
+            return data
+        return data["text"]
+    except KeyError:
+        return ERROR_TELLRAW_JSON.format("missing text key")
+    except json.JSONDecodeError:
+        return ERROR_TELLRAW_JSON.format("error decoding")
 
 
 def send_tell(message, target="@a", host=None, command="tell"):
@@ -63,8 +72,6 @@ def send_tell_general(message, target="@a", host=None):
 
     # if version >= "1.7.2":
     #     1.7.2 is the first version to have tellraw
-    #
-
 
     if use_say:
         # - exclude target in say
@@ -86,6 +93,36 @@ def send_user_message(user, message, color="blue", host=None):
     send_tell_general(message, host=host)
 
 
+def broadcast_user_message(user, message):
+    for host in hosts_get_integrated():
+        send_user_message(user, message, host=host)
+
+
+def send_code(mc_username, code):
+    """
+    send a message to all non alpha/beta servers to
+    check if the telegram user really has this username
+    not really needed but idk
+    """
+    message = [
+        {"text": "Your minecraft username verification code is "},
+        {"text": "{}".format(code), "color": "green"},
+    ]
+    message = json.dumps(message)
+    for host in hosts_get_integrated():
+        # TODO actual version checking
+        if host["alpha"] == True:
+            continue
+
+        # servers that would use the say command wont be used
+        # for verification so just choose a target
+        send_tell_general(
+            message,
+            target=mc_username,
+            host=host,
+        )
+
+
 def send_command(command, host=None):
     if len(command) <= 0:
         return
@@ -104,6 +141,10 @@ def send_command(command, host=None):
         raise NotLocalError()
     if "systemctl_ext" not in active:
         raise MissingSystemctlExt()
+
+    if os.getenv("ENV") == "develop":
+        print(f"EXECUTE COMMAND:\n\thost:\t{host_to_addr(host)}\n\tcmd:\t{command}")
+        return
 
     # TODO test this, change to echo if needed
     with open(SERVER_PATH.format(active["systemctl_ext"]), "w") as file:

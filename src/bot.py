@@ -21,8 +21,12 @@ from handlers.status import status
 from handlers.online import online
 from handlers.local import local
 from handlers.activate import activate
+from handlers.link import link
+
 from handlers.commands import commands
 from handlers.messages import messages
+
+from handlers.middleware import is_admin
 
 
 # Enable logging
@@ -70,18 +74,25 @@ def main() -> None:
     application = Application.builder().token(os.environ.get("TOKEN")).build()
 
     # Register commands
+
+    # normal user commands
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help))
-    application.add_handler(CommandHandler("whitelistadd", whitelistadd))
-    application.add_handler(CommandHandler("whitelistrm", whitelistrm))
     application.add_handler(CommandHandler("ping", ping))
     application.add_handler(CommandHandler(["status", "up"], status))
     application.add_handler(CommandHandler(["online", "tab"], online))
-    application.add_handler(CommandHandler(["a", "activate", "active"], activate))
-    application.add_handler(CommandHandler("local", local))
+    application.add_handler(CommandHandler("link", link))
+
+    # admin commands
+    application.add_handler(CommandHandler("whitelistadd", is_admin(whitelistadd)))
+    application.add_handler(CommandHandler("whitelistrm", is_admin(whitelistrm)))
+    application.add_handler(CommandHandler("local", is_admin(local)))
+    application.add_handler(
+        CommandHandler(["a", "activate", "active"], is_admin(activate))
+    )
 
     # commands that dont fit the above get sent to the server console with the slash removed
-    application.add_handler(MessageHandler(filters.COMMAND, commands))
+    application.add_handler(MessageHandler(filters.COMMAND, is_admin(commands, mock=False)))
     # remaining messages get sent to minecraft
     application.add_handler(MessageHandler(filters.TEXT, messages))
 

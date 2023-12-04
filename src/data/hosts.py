@@ -29,7 +29,7 @@ class HostNotFound(Exception):
 
 
 HOSTS = None
-with open("./hosts.json") as file:
+with open("./data/hosts.json") as file:
     HOSTS = json.load(file)
 
 
@@ -130,6 +130,11 @@ def host_get_by_ext(ext_name):
 
 def hosts_get_all():
     return HOSTS
+
+
+def hosts_get_integrated():
+    # TODO better hosts get that only gets the ones u can send commands on
+    return hosts_get_local()
 
 
 def hosts_get_local():
