@@ -1,7 +1,7 @@
 import json
 import random
 import string
-from minecraft.commands import send_code
+from minecraft.commands import send_code, TELLRAW_COLORS
 
 USERS = None
 JSON_PATH = "./data/users.json"
@@ -98,7 +98,7 @@ def user_init(telegram_id):
         "telegram_id": telegram_id,
         "minecraft_username": None,
         "verification_code": None,
-        "color": "blue",
+        "color": random.choice(TELLRAW_COLORS),
     }
 
 
@@ -171,7 +171,10 @@ def users_check_code(telegram_id, code):
     return true if its a match, false if not
     """
     user = users_find(telegram_id)
-    if user["verification_code"] is not None and code.upper() == user["verification_code"]:
+    if (
+        user["verification_code"] is not None
+        and code.upper() == user["verification_code"]
+    ):
         user["verification_code"] = True
         user_update(user)
         return True

@@ -8,6 +8,25 @@ from data.hosts import (
 import json
 import os
 
+# omitting white
+TELLRAW_COLORS = [
+    "black"
+    "dark_blue"
+    "dark_green"
+    "dark_aqua"
+    "dark_red"
+    "dark_purple"
+    "dark_gray"
+    "gold"
+    "gray"
+    "blue"
+    "green"
+    "aqua"
+    "red"
+    "light_purple"
+    "yellow"
+]
+
 
 SERVER_PATH = "/srv/minecraft/{}/systemd.stdin"
 
@@ -88,14 +107,14 @@ def send_tell_general(message, target="@a", host=None):
 
 def send_user_message(user, message, color="blue", host=None):
     message = '[{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
-        user, color, message.replace("\n","")
+        user, color, message.replace("\n", "")
     )
     send_tell_general(message, host=host)
 
 
-def broadcast_user_message(user, message):
+def broadcast_user_message(user, message, color="blue"):
     for host in hosts_get_integrated():
-        send_user_message(user, message, host=host)
+        send_user_message(user, message, host=host, color=color)
 
 
 def send_code(mc_username, code):
