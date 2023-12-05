@@ -4,8 +4,9 @@ from telegram.ext import ContextTypes
 from data.hosts import MissingSystemctlExt, NotLocalError
 from minecraft.commands import broadcast_user_message
 from data.users import (
-    users_telegram_to_minecraft,
+    users_find,
     user_add,
+    users_telegram_to_minecraft,
     users_check_code,
     UserNotVerified,
     UserNotFound,
@@ -16,11 +17,11 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """send a telegram message into minecraft"""
 
     try:
-        # TODO map telegram user to minecraft user
-        mcuser = users_telegram_to_minecraft(update.message.from_user.id)
+        user = users_find(update.message.from_user.id)
+        mcu = users_telegram_to_minecraft(update.message.from_user.id)
 
         # sends user message to all integrated hosts
-        broadcast_user_message(mcuser, update.message.text)
+        broadcast_user_message(mcu, update.message, color=user["color"])
     except UserNotVerified:
         # would be more prudent to verify in a command or reply but we dont need to
         if users_check_code(update.message.from_user.id, update.message.text):

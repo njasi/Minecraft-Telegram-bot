@@ -7,36 +7,118 @@ from data.hosts import (
 )
 import json
 import os
+from telegram import Message, MessageEntity
 
 # omitting white
 TELLRAW_COLORS = [
-    "black"
-    "dark_blue"
-    "dark_green"
-    "dark_aqua"
-    "dark_red"
-    "dark_purple"
-    "dark_gray"
-    "gold"
-    "gray"
-    "blue"
-    "green"
-    "aqua"
-    "red"
-    "light_purple"
-    "yellow"
+    "black",
+    "dark_blue",
+    "dark_green",
+    "dark_aqua",
+    "dark_red",
+    "dark_purple",
+    "dark_gray",
+    "gold",
+    "gray",
+    "blue",
+    "green",
+    "aqua",
+    "red",
+    "light_purple",
+    "yellow",
 ]
 
 
 SERVER_PATH = "/srv/minecraft/{}/systemd.stdin"
 
+ENTITY_TO_PROPERTY = {
+    MessageEntity.BOLD: "bold",
+    MessageEntity.ITALIC: "italic",
+    MessageEntity.STRIKETHROUGH: "strikethrough",
+    MessageEntity.UNDERLINE: "underline",
+    MessageEntity.SPOILER: "obfuscated",
+}
+
+
+def telegram_to_tellraw_array(message: Message):
+    # NOTE: it doesnt look like thie entities can overlap but i dont
+    # trust the api or this package
+    text = message.text
+
+    changes = {}
+
+    def add_change(i, type, pos):
+        if i not in changes:
+            changes[i] = []
+        changes[i].append({"type": ENTITY_TO_PROPERTY[type], "pos": pos})
+
+    for ent in message.entities:
+        try:
+            add_change(ent.offset, ent.type, "start")
+            add_change(ent.offset + ent.length, ent.type, "end")
+        except KeyError:
+            pass
+
+    tellraw_json = []
+    current_text = ""
+    current_entities = {}
+
+    def add_tellraw_json():
+        nonlocal current_text
+        tellraw_json.append({"text": current_text, **current_entities})
+        current_text = ""
+
+    for i, char in enumerate(text):
+        if i in changes:
+            # if there are changes we need to make a new message obj
+            # so clear the old one
+            add_tellraw_json()
+            # modify the current ent var
+            for change in changes[i]:
+                if change["pos"] == "end":
+                    del current_entities[change["type"]]
+                elif change["pos"] == "start":
+                    current_entities[change["type"]] = True
+        current_text += char
+    add_tellraw_json()
+
+    tellraw_spoiler = []
+    # make both content and value, for different version support
+    spoiler_component = {
+        "obfuscated": True,
+        "text": "",
+        "hoverEvent": {"action": "show_text", "value": "", "content": ""},
+    }
+    spoiler_edited = False
+    # pass through to find any with obsfucation set to true
+    # join adjecent ones and remove formatting
+    for component in tellraw_json:
+        if "obfuscated" in component:
+            spoiler_edited = True
+            spoiler_component["text"] += component["text"]
+            spoiler_component["hoverEvent"]["value"] += component["text"]
+            spoiler_component["hoverEvent"]["content"] += component["text"]
+
+        else:
+            if spoiler_edited:
+                spoiler_edited = False
+                tellraw_spoiler.append(spoiler_component)
+                spoiler_component = {
+                    "obfuscated": True,
+                    "text": "",
+                    "hoverEvent": {"action": "show_text", "value": "", "content": ""},
+                }
+            tellraw_spoiler.append(component)
+
+    # add the last one if we happen to end on spoiler
+    if spoiler_edited:
+        tellraw_spoiler.append(spoiler_component)
+
+    return tellraw_spoiler
+
 
 def send_whitelist_reload(host=None):
     send_command("whitelist reload", host=host)
-
-
-def send_verificaion_code(user, code, host=None):
-    send_command(f"tell {user} Your verification code is {code}", host=host)
 
 
 def ensure_string(message):
@@ -105,16 +187,20 @@ def send_tell_general(message, target="@a", host=None):
         send_tell(message, target=target, host=host)
 
 
-def send_user_message(user, message, color="blue", host=None):
-    message = '[{{"text":"<", "color":"white"}},{{"text":"{}", "color":"{}"}},{{"text":"> {}", "color":"white"}}]'.format(
-        user, color, message.replace("\n", "")
-    )
-    send_tell_general(message, host=host)
+def send_user_message(user, contents, color="blue", host=None):
+    message = [
+        {"text": "<", "color": "white"},
+        {"text": f"{user}", "color": f"{color}"},
+        {"text": "> ", "color": "white"},
+        *contents,
+    ]
+    send_tell_general(json.dumps(message), host=host)
 
 
-def broadcast_user_message(user, message, color="blue"):
+def broadcast_user_message(user, message: Message, color="blue"):
+    contents = telegram_to_tellraw_array(message)
     for host in hosts_get_integrated():
-        send_user_message(user, message, host=host, color=color)
+        send_user_message(user, contents, host=host, color=color)
 
 
 def send_code(mc_username, code):
@@ -123,11 +209,18 @@ def send_code(mc_username, code):
     check if the telegram user really has this username
     not really needed but idk
     """
-    message = [
-        {"text": "Your minecraft username verification code is "},
-        {"text": "{}".format(code), "color": "green"},
+
+    # NOTE: 1.15 added the copy action, there are no errors
+    #       if this is sent to an older version
+    message_json = [
+        {"text": "Your verification code is "},
+        {
+            "text": f"{code}",
+            "color": "green",
+            "clickEvent": {"action": "copy_to_clipboard", "value": f"{code}"},
+        },
     ]
-    message = json.dumps(message)
+    message = json.dumps(message_json)
     for host in hosts_get_integrated():
         # TODO actual version checking
         if host["alpha"] == True:
