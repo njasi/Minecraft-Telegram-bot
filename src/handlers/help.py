@@ -13,6 +13,8 @@ This is a simple bot used to check basic info about a minecraft server.
     Measure the response time of the server.
 /online [hostname]:
     Check what players are online (obsfucated by some servers)
+/link username:
+    Link your telegram user to your minecraft user. Afer linking, your telegram messages will be sent to the online minecraft servers in chat.
 
 <b>If you're a chat admin there are some additional commands:</b>
 
@@ -29,7 +31,7 @@ This is a simple bot used to check basic info about a minecraft server.
 /whitelistrm username [extname]
     Remove player from the whitelist of the active server
 /local:
-    list local server information: extnames, hostnames, whitelist status 
+    list local server information: extnames, hostnames, whitelist status
 
 Additionally, any command you send that is not one of the above (like /say) is sent to the server console. This way you can do more complicated things
 if you need.

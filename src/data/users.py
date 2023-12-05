@@ -171,7 +171,7 @@ def users_check_code(telegram_id, code):
     return true if its a match, false if not
     """
     user = users_find(telegram_id)
-    if user["verification_code"] is not None and code == user["verification_code"]:
+    if user["verification_code"] is not None and code.upper() == user["verification_code"]:
         user["verification_code"] = True
         user_update(user)
         return True
