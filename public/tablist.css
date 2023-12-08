@@ -55,13 +55,13 @@ body {
 }
 
 #wrapper {
-  /* width: 502px;
-  height: 64px; */
+  width: 502px;
+  height: 100px;
   display: flex;
-  align-items: start;
+  align-items: center;
+  flex-direction: column;
   flex-wrap: wrap;
   padding: 5px;
-
   background-color: rgba(0, 0, 0, 0.5);
 }
 
@@ -69,10 +69,15 @@ body {
   width: 30%;
   display: flex;
   align-items: center;
-  justify-content: start;
+  justify-content: center;
+}
+
+.player * {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .player img {
   width: 17px;
-  margin-right: 5px;
+  padding: 1px;
+  padding-right: 5px;
 }
