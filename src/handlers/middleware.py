@@ -35,11 +35,10 @@ async def update_from_admin(update: Update, context: ContextTypes.DEFAULT_TYPE):
         - defined in the env file
         - chat admin in the Minecraft chat on telegram
     """
+    user_id = update.message.from_user.id
     try:
-        user_id = update.message.from_user.id
-
         # check if user is one of the predefined admins in the config
-        if user_id in json.parse(CONFIG_ADMINS):
+        if user_id in CONFIG_ADMINS:
             return True
 
         # or if they are one of the admins of the minecraft telegram chat
@@ -78,7 +77,8 @@ def is_admin(handler, mock=True):
     """
 
     async def is_admin_middleware(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        if await update_from_admin(update, context):
+        is_admin = await update_from_admin(update, context)
+        if is_admin:
             return await handler(update, context)
         elif mock:
             try:

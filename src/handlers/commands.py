@@ -25,11 +25,11 @@ async def commands(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "Could not find the systemd.stdin file, check your configuration."
         )
         return
-    except:
+    except Exception as e:
         await update.effective_message.reply_html(
             "There was an unknown error while executing your command."
         )
-        return
+        raise e
 
     # TODO get response from server stdout?
     # make it check journalctl? or can systemd output two places

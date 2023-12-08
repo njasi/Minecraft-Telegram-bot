@@ -255,7 +255,7 @@ def send_command(command, host=None):
         raise MissingSystemctlExt()
 
     if os.getenv("ENV") == "develop":
-        print(f"EXECUTE COMMAND:\n\thost:\t{host_to_addr(host)}\n\tcmd:\t{command}")
+        print(f"EXECUTE COMMAND:\n\thost:\t{host_to_addr(active)}\n\tcmd:\t{command}")
         return
 
     # TODO test this, change to echo if needed
