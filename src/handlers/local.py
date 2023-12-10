@@ -6,7 +6,7 @@ from data.hosts import hosts_get_local, host_get_value, host_get_name, host_to_a
 def make_ext_string(host):
     name = host_get_name(host)
     # TODO clean up the host methods
-    ext = host_get_value("", "systemctl_ext", host=host)
+    ext = host_get_value("", "extname", host=host)
     wp = host_get_value("", "whitelist_path", host=host)
     wp = "enabled" if wp else "disabled"
     addr = host_to_addr(host)

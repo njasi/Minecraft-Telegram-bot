@@ -9,7 +9,7 @@ class NotLocalError(Exception):
 
 
 class MissingSystemctlExt(Exception):
-    def __init__(self, msg="Host does not have systemctl_ext", *args, **kwargs):
+    def __init__(self, msg="Host does not have extname", *args, **kwargs):
         super().__init__(msg, *args, **kwargs)
 
 
@@ -28,17 +28,42 @@ class HostNotFound(Exception):
         super().__init__(msg, *args, **kwargs)
 
 
-HOSTS = None
-with open("./data/hosts.json") as file:
-    HOSTS = json.load(file)
-
-
 # TODO refactor these cause they bother me
 #       host_x functions should take a host json obj
 #       and refer to one host
 #
 #       hosts_x functions should taake some other arg
 #       and ook through the HOSTS var
+
+# default host info to fill in gaps
+DEFAULTS = None
+HOSTS = None  # loaded in below
+with open("./data/defaults.json") as file:
+    DEFAULTS = json.load(file)
+
+
+def host_ensure_defaults(host, defaults=DEFAULTS):
+    """
+    ensure that a given host has all the information that is required of it
+    fill in missing informaion with defaults
+    """
+
+    for key in defaults:
+        if key not in host:
+            host[key] = defaults[key]
+        elif host[key] is None:
+            host[key] = defaults[key]
+    return host
+
+
+def hosts_ensure_defaults(hosts, defaults=DEFAULTS):
+    return [host_ensure_defaults(host, defaults=defaults) for host in hosts]
+
+
+# load in host config, and ensure defaults
+with open("./data/hosts.json") as file:
+    HOSTS = json.load(file)
+    HOSTS = hosts_ensure_defaults(HOSTS)
 
 
 def host_get_details(addr, ext=None):
@@ -53,7 +78,7 @@ def host_get_details(addr, ext=None):
             pass
 
     for host in HOSTS:
-        if ext and host["systemctl_ext"] == ext:
+        if ext and host["extname"] == ext:
             return ext
         if (
             hostname == host["hostname"]
@@ -123,7 +148,7 @@ def hosts_get_active():
 
 def host_get_by_ext(ext_name):
     for host in HOSTS:
-        if "systemctl_ext" in host and host["systemctl_ext"] == ext_name:
+        if "extname" in host and host["extname"] == ext_name:
             return host
     raise HostNotFound()
 

@@ -17,7 +17,7 @@ async def commands(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     except MissingSystemctlExt:
         await update.effective_message.reply_html(
-            "The server is missing systemctl_ext in the hosts.json file"
+            "The server is missing extname in the hosts.json file"
         )
         return
     except FileNotFoundError:

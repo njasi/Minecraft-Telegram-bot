@@ -1,0 +1,12 @@
+{
+  "name": "Minecraft Server",
+  "hostname": null,
+  "version": null,
+  "port": 25565,
+  "local": false,
+  "whitelist_path": null,
+  "systemctl_name": "minecraft",
+  "extname": null,
+  "alpha": false,
+  "default": false
+}

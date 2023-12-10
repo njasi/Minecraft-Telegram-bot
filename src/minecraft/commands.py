@@ -41,7 +41,7 @@ ENTITY_TO_PROPERTY = {
 
 
 def telegram_to_tellraw_array(message: Message):
-    # NOTE: it doesnt look like thie entities can overlap but i dont
+    # NOTE: it doesnt look like thie entities can overlap but i don't
     # trust the api or this package
     text = message.text
 
@@ -251,7 +251,7 @@ def send_command(command, host=None):
     # if its not local or setup raise error
     if not active["local"]:
         raise NotLocalError()
-    if "systemctl_ext" not in active:
+    if "extname" not in active:
         raise MissingSystemctlExt()
 
     if os.getenv("ENV") == "develop":
@@ -259,6 +259,6 @@ def send_command(command, host=None):
         return
 
     # TODO test this, change to echo if needed
-    with open(SERVER_PATH.format(active["systemctl_ext"]), "w") as file:
+    with open(SERVER_PATH.format(active["extname"]), "w") as file:
         file.write(command + "\n")
         file.flush()

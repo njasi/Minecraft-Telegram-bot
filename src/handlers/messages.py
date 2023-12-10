@@ -1,3 +1,4 @@
+import os
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -12,6 +13,7 @@ from data.users import (
     UserNotFound,
 )
 
+MC_CHAT_ID = int(os.environ.get("MINECRAFT_CHAT_ID"))
 
 async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """send a telegram message into minecraft"""
@@ -19,7 +21,8 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
         user = users_find(update.message.from_user.id)
         mcu = users_telegram_to_minecraft(update.message.from_user.id)
-
+        if not update.effective_chat.id == MC_CHAT_ID:
+            return # only forward messages that are in the minecraft chat
         # sends user message to all integrated hosts
         broadcast_user_message(mcu, update.message, color=user["color"])
     except UserNotVerified:
@@ -38,6 +41,6 @@ async def messages(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         return
     except MissingSystemctlExt:
         await update.effective_message.reply_html(
-            "A local server is missing systemctl_ext in the hosts.json file"
+            "A local server is missing extname in the hosts.json file"
         )
         return

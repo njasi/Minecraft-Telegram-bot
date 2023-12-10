@@ -7,6 +7,7 @@ This is a basic server telegram bot that can interface with minecraft servers in
 - ping public facing servers and get info
 - control local minecraft server
 - control local whitelist.json files
+- telegram users can link their account to their minecraft account, allowing telegram messages to be forwarded to mc chat.
 - TODO control local blacklist.json files?
 - TODO control server.properties settings?
 
@@ -20,7 +21,8 @@ There are some nice visuals the bot provides:
   ![hypixel example image](public/hypixel.jpg)
 - The `/whitelistadd` command renders the user's skin with [NickAc's Minecraft Skin Renderer](https://nmsr.nickac.dev/) so you can be sure you've added the right person:
   <img src="public/whitelist.png" data-canonical-src="public/whitelist.png" width="200"/>
-- The `/online` command is planned to render the users like a tablist, likely using the `htm2image` package
+- The `/online` command renders the user faces + names like a tablist, using the `htm2image`. #TODO get an example image of this.
+- Telegram messages forwarded to minecraft chat (from linked users in the configured) support near full formatting (bold, italic, underline, strikethrough, spoiler,)
 
 ## Setup
 
@@ -43,27 +45,38 @@ An array of your saved hosts.
   {
     "name": "My Minecraft Vanilla Server",
     "hostname": "my.minecraft.server.com",
+    "version": "1.20.4",
     "port": 25565,
     "local": true,
     "whitelist_path": "/srv/minecraft/vanilla/whitelist.json",
     "systemctl_name": "minecraft",
-    "systemctl_ext": "vanilla",
+    "extname": "vanilla",
+    "alpha": true,
     "default": true
   },
   {
     "name": "My Minecraft Server",
     "hostname": "alpha.minecraft.server.com",
+    "version": "a1.2.6",
     "port": 25565,
     "local": true,
     "whitelist_path": "/srv/minecraft/alpha/whitelist.json",
     "systemctl_name": "minecraft",
-    "systemctl_ext": "alpha"
+    "extname": "alpha",
+    "alpha": false,
+    "default": false
   },
   {
     "name": "Hypixel",
     "hostname": "mc.hypixel.net",
+    "version": "1.8-1.20.4",
     "port": 25565,
-    "local": false
+    "local": false,
+    "whitelist_path": null,
+    "systemctl_name": null,
+    "extname": null,
+    "alpha": false,
+    "default": false
   }
 ]
 ```
@@ -72,32 +85,39 @@ Values:
 
 - `name`: The pretty name visible by default to commands like /status.
 - `hostname`: The ip address of the server (can use localhost, but it wont display the external facing ip when you ask for it)
+- `version`: The version or versions supported by the server. Standard minecraft version format seperated by commas for a list, or a hyphen for a range. ie: "1.8.0-1.20.4" or "1.18.1,1.18.2"
 - `port`: The port the server is running on, will be displayed if is non default when prompted for the hostname.
 - `local`: True if this server is local
-- `whitelist_path`: Path to the whitelist.json file for this local server
+- `whitelist_path`: Path to the whitelist.json file for this local server. Could phase this out and use extname to find it, but that would only work if one decides to fully integrade with the bot.
 - `systemctl_name`: Service name of the server (ie minecraft@.service => `systemctl_name=minecraft`)
-- `systemctl_ext`: Name of the specific minecraft server (ie minecraft@vanilla.service => `systemctl_ext=vanilla`). The service has been setup this way so you can easily run multiple minecraft servers.
+- `extname`: Name of the specific minecraft server (ie minecraft@vanilla.service => `extname=vanilla`). The service has been setup this way so you can easily run multiple minecraft servers. This is also the short name you will use when refrencing the host (hostname can be used, but they are generally long)
+- `alpha`: If the server is an alpha/beta server which will not respond to modern minecraft pings. (TODO phase this away with the versioning)
 - `default`: If this is the default active server for the bot.
 
 ### .env
 
 ```bash
-# telegram bot config
+# telegram bot config, required
 DEVELOPER_CHAT_ID = "DEV_CHAT_ID"
+MINECRAFT_CHAT_ID = ""
 TOKEN             = "TELEGRAM_BOT_TOKEN"
-WHITELIST_PATH    = "./tmp.json"
 
-# default minecraft server config
-SERVER_HOST = "host.name"
-SERVER_PORT = 25565
+# admin config, optional
+ADMINS = '[]'
+MOCK_STICKERS = '[]'
+
+# dev config
+ENV = "develop"
 ```
 
 Values:
 
 - `DEVELOPER_CHAT_ID`: chat id where you want errors sent
+- `MINECRAFT_CHAT_ID`: The main telegram chat that the bot will be operating in. TODO: make this a list? or a config file?
 - `TOKEN`: telegram bot token
-- `SERVER_HOST`: hostname of the default server
-- `SERVER_PORT`: port of the default server
+- `ADMINS`: a json list of the admins you wish to give hard coded access
+- `MOCK_STICKERS`: list of sticker ids that can be sent when a non admin tries to use an admin command
+- `ENV`: current enviroment, if "develop" some operations will be logged into console rather than executed (ie testing from non server computer)
 
 ### Local setup
 
@@ -105,7 +125,7 @@ As mentioned earlier, for the bot to have control over the server it has be run 
 
 This isn't neccessary if you only want the whitelist functionality though, as that directly edits your whitelist.json for simplicity.
 
-In the below setup we let `servername` be the name of the server (one_word). Note that this is the value to use in the host config file for `systemctl_ext`. If there are multiple servers on the local system you want to manage with the bot make sure the names are different...
+In the below setup we let `servername` be the name of the server (one_word). Note that this is the value to use in the host config file for `extname`. If there are multiple servers on the local system you want to manage with the bot make sure the names are different...
 
 These systemd files are largely taken from [here](https://github.com/jtait/minecraft_systemd/tree/master) if you want to read their setup instructions.
 
@@ -186,35 +206,36 @@ This project uses the `html2image` package, which uses a browser in headless mod
 
 ## Commands
 
-- `/online hostname`:
-  TODO
-  Check what players are online (obsfucated by some servers)
 - `/status [hostname...] -a,--all -h,--hostname`
   Check server(s) status, renders motd like in the minecraft launcher.
-  - `-a`, `--all`: show all of the hosts in your hosts file.
-  - `-h`, `--hostname`: show hostnames instead of pretty names.
-    d
-- `/ping hostname`:
+  - -a, --all: show all of the hosts in your hosts file.
+  - -h, --hostname: show hostnames instead of pretty names.
+- `/ping [hostname]`:
   Measure the response time of the server.
+- `/online [hostname]`:
+  Check what players are online (obsfucated by some servers)
+- `/link <username>`:
+  Link your telegram user to your minecraft user. Afer linking, your telegram messages will be sent to the online minecraft servers in chat.
 
 ### Admin commands
 
-- `/serverstop`:
-  TODO
-  Stop the server
-- `/serverstart`:
-  TODO
-  Start the server
-- `/serverrestart`:
-  TODO
-  Restart the server
-- `/whitelistadd username`:
-  Add player to the whitelist
-- `/whitelistrm username`:
+- `/activate [extname]`
+  Select the active server by it's extname, or send what the active host is
+- `/serverstop [extname]`:
+  Stop the server, defaults to active server
+- `/serverstart [extname]`:
+  Start the server, defaults to active server
+- `/serverrestart [extname]`:
+  Restart the server, defaults to active server
+- `/whitelistadd <username> [extname]`:
+  Add player to the whitelist of the active server
+- `/whitelistrm <username> [extname]`:
   Remove player from the whitelist
-- `/activate hostname`:
+- `/activate <hostname>`:
   Set active server for general commands
+- `/local`:
+  list local server information: extnames, hostnames, whitelist status
 
 ### General admin commands:
 
-Any command that is not reconized will be sent directly to the active server console via tmux
+Additionally, any command you send that is not one of the above (like /say) is sent to the server console. This way you can do more complicated things if needed. TODO support command output from the services.
