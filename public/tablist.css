@@ -55,10 +55,11 @@ body {
 }
 
 #wrapper {
+  /* TODO make height, width dynamic for when it reaches max players? */
   width: 502px;
-  height: 100px;
+  height: 502px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-direction: column;
   flex-wrap: wrap;
   padding: 5px;
@@ -66,7 +67,7 @@ body {
 }
 
 .player {
-  width: 30%;
+  width: 15%;
   display: flex;
   align-items: center;
   justify-content: center;
