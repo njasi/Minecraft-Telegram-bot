@@ -50,6 +50,8 @@ body {
   padding: 0;
   font-family: minecraftnew;
   color: #7c7c7b;
+  /* TODO change this out for some random minecraft screenshot? probably
+  look more normal with like basic sky background, cause tablist is at top */
   background-image: url("https://static.wikia.nocookie.net/minecraft_gamepedia/images/c/c1/Dirt_background_JE2.png/revision/latest?cb=20210507124914");
   background-repeat: repeat;
 }
