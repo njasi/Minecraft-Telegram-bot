@@ -5,7 +5,7 @@ from data.hosts import (
     hosts_to_addrs,
     host_to_addr,
     hosts_get_active,
-    host_get_details,
+    host_find,
     HostNotRegistered,
 )
 from minecraft.server import parse_host, get_server, ping_old
@@ -45,7 +45,7 @@ def server_status(
     alpha = False
     # lookup name and check if server is alpha
     try:
-        host = host_get_details(addr)
+        host = host_find(addr)
         if ("host" not in options or not options["host"]) and "name" in host:
             name = host["name"]
         if "alpha" in host and host["alpha"]:

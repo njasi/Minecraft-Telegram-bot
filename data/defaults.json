@@ -3,10 +3,10 @@
   "hostname": null,
   "version": null,
   "port": 25565,
+  "alpha": false,
   "local": false,
   "whitelist_path": null,
-  "systemctl_name": "minecraft",
+  "systemctl_name": null,
   "extname": null,
-  "alpha": false,
   "default": false
 }

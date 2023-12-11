@@ -59,7 +59,7 @@ body {
 #wrapper {
   /* TODO make height, width dynamic for when it reaches max players? */
   width: 502px;
-  height: 502px;
+  height: 202px;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
@@ -69,15 +69,15 @@ body {
 }
 
 .player {
-  width: 15%;
+  width: 167px;
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.player * {
+  justify-content: left;
   background-color: rgba(255, 255, 255, 0.1);
 }
+
+/* .player * {
+} */
 
 .player img {
   width: 17px;

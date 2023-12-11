@@ -10,7 +10,6 @@ from data.hosts import (
     hosts_to_addrs,
     host_to_addr,
     hosts_get_active,
-    host_get_details,
     HostNotRegistered,
 )
 from minecraft.skins import render_face

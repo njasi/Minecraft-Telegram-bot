@@ -66,7 +66,24 @@ with open("./data/hosts.json") as file:
     HOSTS = hosts_ensure_defaults(HOSTS)
 
 
-def host_get_details(addr, ext=None):
+def host_find(info):
+    try:
+        return host_get_by_addr(info)
+    except HostNotFound:
+        pass
+
+    try:
+        return hosts_get_by_ext(info)
+    except HostNotFound:
+        pass
+
+    return None
+
+
+def host_get_by_addr(addr, ext=None):
+    """
+    host get by address
+    """
     hostname = addr
     port = 25565
     parts = addr.split(":")
@@ -86,12 +103,23 @@ def host_get_details(addr, ext=None):
             or hostname == host["name"]
         ):
             return host
-    raise HostNotRegistered()
+    raise HostNotFound()
+
+
+def hosts_get_by_ext(extname):
+    """
+    Look through the hosts config json and
+    find a host with a matching extname
+    """
+    for host in HOSTS:
+        if host["extname"] == extname:
+            return host
+    raise HostNotFound()
 
 
 def host_get_value(hkey, key, host=None):
     if host is None:
-        host = host_get_details(hkey)
+        host = host_find(hkey)
 
     if host is not None and key in host:
         return host[key]
@@ -107,10 +135,6 @@ def host_get_name(host):
     return name
 
 
-def host_get_port(hkey):
-    return host_get_value(hkey, "port")
-
-
 def host_to_addr(host):
     return f"{host['hostname']}:{host['port']}"
 
@@ -121,10 +145,9 @@ def hosts_to_addrs():
 
 def hosts_get_default():
     for host in HOSTS:
-        if "default" in host and host["default"]:
+        if host["default"]:
             return host
-
-    # default to first one if theres no bool
+    # return first one if none are set to default
     return host[0]
 
 
@@ -133,24 +156,27 @@ def hosts_set_active(hostname):
     Somewhat gross wrapper for if i need to do it by name
     """
     global active_server
-    host_get_details(hostname)
-    host_set_active(host_get_details(hostname))
+    host_find(hostname)
+    host_set_active(host_find(hostname))
 
 
 def host_set_active(host):
+    """
+    change the active host to the one given
+
+    abstraction in case I want to store the active server in a different way later
+    """
     global active_server
     active_server = host
 
 
 def hosts_get_active():
+    """
+    get the active host
+
+    abstraction in case I want to store the active server in a different way later
+    """
     return active_server
-
-
-def host_get_by_ext(ext_name):
-    for host in HOSTS:
-        if "extname" in host and host["extname"] == ext_name:
-            return host
-    raise HostNotFound()
 
 
 def hosts_get_all():
@@ -158,12 +184,18 @@ def hosts_get_all():
 
 
 def hosts_get_integrated():
-    # TODO better hosts get that only gets the ones u can send commands on
-    return hosts_get_local()
+    """
+    Get the hosts that we caan actually send commands on,
+    for now assume this is any host with systemctl_name set
+
+    # TODO maybe add an integrated bool? idk if ur giving the bot systemctl access
+    # it shld probably have minecraft cli access
+    """
+    return [host for host in hosts_get_all() if host["systemctl_name"]]
 
 
 def hosts_get_local():
-    return [host for host in hosts_get_all() if "local" in host and host["local"]]
+    return [host for host in hosts_get_all() if host["local"]]
 
 
 # load in the default server host
