@@ -73,6 +73,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: left;
+  font-size: 2rem;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -80,7 +81,7 @@ body {
 } */
 
 .player img {
-  width: 17px;
-  padding: 1px;
-  padding-right: 5px;
+  width: 34px;
+  padding: 2px;
+  padding-right: 10px;
 }
