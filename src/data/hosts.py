@@ -191,7 +191,9 @@ def hosts_get_integrated():
     # TODO maybe add an integrated bool? idk if ur giving the bot systemctl access
     # it shld probably have minecraft cli access
     """
-    return [host for host in hosts_get_all() if host["systemctl_name"]]
+    return [
+        host for host in hosts_get_all() if host["systemctl_name"] and host["local"]
+    ]
 
 
 def hosts_get_local():

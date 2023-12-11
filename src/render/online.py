@@ -12,11 +12,11 @@ import math
 # sizes in pixels for getting a nice sized pic of the tablist
 
 # height + width incuding padding / margin
-PLAYER_CARD_WIDTH = 167
-PLAYER_CARD_HEIGHT = 19
-TABLIST_HEIGHT = 202
-TABLIST_WIDTH = 502
-TABLIST_PADDING = 5
+PLAYER_CARD_WIDTH = 334
+PLAYER_CARD_HEIGHT = 38
+TABLIST_HEIGHT = 404
+TABLIST_WIDTH = 1004
+TABLIST_PADDING = 10
 # computed values
 PLAYERS_PER_COL = math.floor(TABLIST_HEIGHT / PLAYER_CARD_HEIGHT)
 MAX_COLS = math.floor(TABLIST_WIDTH / PLAYER_CARD_WIDTH)
@@ -34,8 +34,6 @@ def get_size(player_count):
 
     num_cols = math.ceil(player_count / PLAYERS_PER_COL)
 
-    print(num_cols)
-    print(player_count / PLAYERS_PER_COL)
     if num_cols > MAX_COLS:
         return (
             TABLIST_WIDTH + TABLIST_PADDING * 2,
@@ -77,7 +75,6 @@ def render_online(addr=host_to_addr(hosts_get_active()), output_path="/tmp/"):
 
     # load renderer
     size = get_size(len(status.players.sample))
-    print(size)
     hti = Html2Image(output_path=output_path, size=size)
 
     # load in formatting from files
@@ -91,7 +88,6 @@ def render_online(addr=host_to_addr(hosts_get_active()), output_path="/tmp/"):
     file = f"{addr}_tablist.png"
 
     html = wrapping.format(cols)
-    print(html)
 
     load_assets()
     hti.screenshot(html_str=html, css_str=css, save_as=file)
